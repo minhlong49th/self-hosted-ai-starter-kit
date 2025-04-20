@@ -157,20 +157,20 @@ services:
     <<: *init-ollama
     depends_on:
       - ollama-gpu
-  ngrok:
-      image: ngrok/ngrok:latest
-      restart: unless-stopped
-      command:
-        - "start"
-        - "--all"
-        - "--config"
-        - "/etc/ngrok.yml"
-      volumes:
-        - ./ngrok.yml:/etc/ngrok.yml
-      ports:
-        - 4040:4040
-      depends_on:
-        - n8n  
+  # ngrok:
+  #     image: ngrok/ngrok:latest
+  #     restart: unless-stopped
+  #     command:
+  #       - "start"
+  #       - "--all"
+  #       - "--config"
+  #       - "/etc/ngrok.yml"
+  #     volumes:
+  #       - ./ngrok.yml:/etc/ngrok.yml
+  #     ports:
+  #       - 4040:4040
+  #     depends_on:
+  #       - n8n  
   # Uncomment the following block to enable Cloudflare Tunnel
   cloudflare-tunnel:
       image: cloudflare/cloudflared:latest              
@@ -182,3 +182,24 @@ services:
         - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}       
       depends_on:
         - n8n
+  
+  baserow:
+    container_name: baserow
+    image: baserow/baserow:1.30.1
+    networks: ['demo']
+    restart: always
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_USER: ${POSTGRES_USER}
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${POSTGRES_BASEROW_DB}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      BASEROW_EXTRA_ALLOWED_HOSTS: "baserow"
+      BASEROW_PUBLIC_URL: http://baserow.localhost
+    links:
+      - postgres
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - baserow_data:/baserow/data
